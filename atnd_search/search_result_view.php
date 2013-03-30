@@ -53,7 +53,7 @@
 				{
 					$queries['keywords'] = urldecode($queries['keywords']);
 				}
-				var_dump($queries);
+				//var_dump($queries);
 				$query = http_build_query($queries);
 				$url = 'http://'. $params['host'] . $params['path']. '?'. $query;
 				printf("<a href='%s'>%d</a>", $url, $i);
@@ -69,17 +69,22 @@
 		echo	"<tr>";
 		echo	"<th>タイトル</th>";
 		echo	"<th>キャッチ</th>";
-		echo	"<th>開始日</th>";
+		echo	"<th>開始日時</th>";
 		echo	"<th>イベントURL</th>";
 	//	echo	"<th>概要</th>";
 		echo	"</tr>";
 		echo	"\n";
+
+		$week = array('日','月','火','水','木','金','土');
+
 		foreach($events as $event)
 		{
+			$time = strtotime($event['started_at']);
+			$start_date = date("Y-m-d", $time). "(". $week[intval(date("w", $time))] . ") ".date("H:i", $time);
 			echo	"<tr>";
 			echo	"<td>".$event['title']."</td>";
 			echo	"<td>".$event['catch']."</td>";
-			echo	"<td>".$event['started_at']."</td>";
+			echo	"<td>".$start_date."</td>";
 			echo	"<td><a target='_blank' href='".$event['event_url']."'>URL</a></td>";
 	//		echo	"<td>".$event['description']."</td>";
 			echo	"</tr>";
@@ -87,6 +92,8 @@
 		}
 		echo	"</table>\n";
 	}
+
+	printf("イベント数 : %d<br>", $max_count);
 
 	echo	"<br>";
 	//	リンク先のページを表示
