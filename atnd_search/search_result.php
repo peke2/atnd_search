@@ -17,7 +17,7 @@
 			$this->format = $format;
 		}
 
-		function	search($keywords, $ym, $start)
+		function	search($keywords, $ym, $start, $count_per_page)
 		{
 			$ch = curl_init();
 			$base_url = 'http://api.atnd.org/events/';
@@ -44,7 +44,7 @@
 				$url = $url . '?' . $query;
 			}
 		*/
-			$query = $this->getQuery($keywords, $ym, $start);
+			$query = $this->getQuery($keywords, $ym, $start, $count_per_page);
 			if( !empty($query) )
 			{
 				$url = $url . '?' . $query;
@@ -61,6 +61,9 @@
 		}
 
 
+		/*
+			キーワードの区切りの「,」をURLエンコードに含めないために処理を分ける
+		*/
 		function	getKeywordQuery($keywords)
 		{
 			if( !empty($keywords) )
@@ -83,7 +86,10 @@
 		}
 
 
-		function	getQuery($keywords, $ym, $start)
+		/*
+			パラメータからクエリーを取得する
+		*/
+		function	getQuery($keywords, $ym, $start, $count_per_page)
 		{
 			$queries = array();
 			$query = null;
@@ -103,6 +109,11 @@
 			if( !empty($start) )
 			{
 				$queries['start'] = $start;
+			}
+
+			if( !empty($count_per_page) )
+			{
+				$queries['count'] = $count_per_page;
 			}
 
 			$queries['format'] = $this->format;
@@ -132,21 +143,31 @@
 	if( isset($_GET['ym']) )		$ym       = $_GET['ym'];
 	if( isset($_GET['start']) )		$start    = $_GET['start'];
 
-	$search_result = $atnd->search($keywords, $ym, $start);
+	//	ページ当たりのイベント数
+	$count_per_page = 20;
 
-	$entries = json_decode($search_result, TRUE);
+	$search_result = $atnd->search($keywords, $ym, $start, $count_per_page);
 
-	var_dump($entries);
+	$event_info = json_decode($search_result, TRUE);
 
+	//var_dump($event_info);
 
+/*
 	echo '<pre>';
-
 	var_dump( $atnd->getKeywordQuery($keywords) );
-
 	var_dump($_GET);
 	$query = $atnd->getQuery($keywords, $ym, $start);
 	echo $query."\r";
 	var_dump($search_result);
 	echo '</pre>';
+*/
+
+	$events = $event_info['events'];
+	$max_count = $event_info['results_available'];
+	$currente_url = 'http://'. $_SERVER['HTTP_HOST']. $_SERVER['REQUEST_URI'];
+	//var_dump($_SERVER['HTTP_HOST']);
+	//var_dump($currente_url);
+
+	require_once('search_result_view.php');
 
 ?>
